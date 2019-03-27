@@ -68,7 +68,7 @@ def get_daily_values(date_download='2018-10-03'):
     rain = get_field_root(root, field="rain", type="float")
     w_med = get_field_root(root, field="w_med", type="float")
     w_max = get_field_root(root, field="w_max", type="float")
-    w_dir = get_field_root(root, field="w_max", type="string")
+    w_dir = get_field_root(root, field="w_dir", type="string")
     slpres = get_field_root(root, field="slpres", type="float")
     rad_med = get_field_root(root, field="rad_med", type="float")
     rad_max = get_field_root(root, field="rad_max", type="float")
@@ -227,7 +227,7 @@ def add_background(plt, projection, image='background.png'):
     plt.axis('off')
     plt.imshow(img, zorder=0, extent=extents)
 
-    return(plt.gca())
+    return plt.gca()
 
 def add_vals_on_map(ax, projection, var, lons, lats, minval=None, maxval=None,
                      cmap='rainbow', border=True, shift_x=0., shift_y=0., fontsize=12, colors=True):
@@ -260,27 +260,59 @@ def add_vals_on_map(ax, projection, var, lons, lats, minval=None, maxval=None,
             if not(np.isnan(txt)) and (lon_min<=lons[i]<=lon_max) and (lat_min<=lats[i]<=lat_max):
                 texts.append(ax.text(lons[i]+shift_x, lats[i]+shift_y, ('%d'%txt),
                  color=m.to_rgba(float(txt)), weight='bold', fontsize=fontsize))
-        else:
+        else: # No color defined
             if not(np.isnan(txt)) and (lon_min<=lons[i]<=lon_max) and (lat_min<=lats[i]<=lat_max):
                 texts.append(ax.text(lons[i]+shift_x, lats[i]+shift_y, ('%d'%txt),
-                 color='black', weight='bold', fontsize=fontsize))            
+                 color='white', weight='bold', fontsize=fontsize))            
     # Add border to the text
     if border: 
         [text.set_path_effects([patheffects.Stroke(linewidth=1, foreground='black'), patheffects.Normal()]) for text in texts]
 
+def add_barbs_on_map(ax, projection, u, v, lons, lats,
+             shift_x=0., shift_y=0., magnitude=False, cmap='gnuplot_r', minval=0, maxval=30):
+    '''Given an input projection, a variable containing the values and a plot put
+    the values on a map exlcuing NaNs and taking care of not going
+    outside of the map boundaries, which can happen.
+    - shift_x and shift_y apply a shifting offset to all text labels'''
+
+    if (importlib.util.find_spec("cartopy") is not None):
+        extents = ax.get_extent()
+    else:
+        if projection == 'italy':
+            extents = [6.000000000000001, 19.0, 36.0, 48.00000000000001]
+    
+    lon_min, lon_max, lat_min, lat_max = extents
+
+    for i, txt in enumerate(u):
+        if not(np.isnan(txt)) and (lon_min<=lons[i]<=lon_max) and (lat_min<=lats[i]<=lat_max):
+            if magnitude:
+                norm = mplcolors.Normalize(vmin=minval, vmax=maxval)
+                ax.barbs(lons[i]+shift_x, lats[i]+shift_y, u[i], v[i], (u[i]**2+v[i]**2)**(0.5),
+                    zorder=6, length=6, cmap=cmap, norm=norm)
+            else:
+                ax.barbs(lons[i]+shift_x, lats[i]+shift_y, u[i], v[i], zorder=6, length=6)
+          
+def wind_components(speed, wdir):
+    '''Get wind components from speed and direction.'''
+    wdir = np.deg2rad(wdir)
+    u = -speed * np.sin(wdir)
+    v = -speed * np.cos(wdir)
+    return u, v
+
 def add_logo_on_map(ax, logo, zoom=0.15, pos=(0.92, 0.1)):
     '''Add a logo on the map given a pnd image, a zoom and a position
     relative to the axis ax.'''
-    img_logo=OffsetImage(read_png(logo), zoom=zoom)
+    img_logo = OffsetImage(read_png(logo), zoom=zoom)
     logo_ann = AnnotationBbox(img_logo, pos, xycoords='axes fraction',frameon=False)
-    ax.add_artist(logo_ann)
+    at = ax.add_artist(logo_ann)
+    return at
 
 def add_hist_on_map(ax, var, width="30%", height="15%", loc=1, label='Temperatura [C]'):
     '''Add an histogram of the variable on the map, specifying the location.
     Unfortunately face color has to be hardcoded while I understand how can
     one retrieve the  color of the fillcontinents method from basemap.'''
     axin = inset_axes(ax, width=width, height=height, loc=loc)
-    axin.hist(var[~np.isnan(var)], bins=50, normed=True, color='black', alpha=0.7)
+    hist = axin.hist(var[~np.isnan(var)], bins=50, normed=True, color='black', alpha=0.7)
     axin.yaxis.set_visible(False)
     axin.spines['right'].set_visible(False)
     axin.spines['left'].set_visible(False)
@@ -288,5 +320,6 @@ def add_hist_on_map(ax, var, width="30%", height="15%", loc=1, label='Temperatur
     axin.set_xlabel(label)
     # axin.set_facecolor('#64B6AC', alpha=0.1)
     axin.set_facecolor((0, 0, 0, 0))
+    return hist
 
 

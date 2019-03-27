@@ -25,6 +25,8 @@ def home():
                 <option id="temperature" value="temperature">Temperature [C]</option>
                 <option id="rain" value="rain">Daily Precipitation [mm]</option>
                 <option id="humidity" value="humidity">Humidity [%]</option>
+                <option id="gust" value="gust">Wind gusts [km/h]</option>
+                <option id="synoptic" value="synoptic">MSLP [hPa] and winds direction</option>
            </select>
            <input class="btn" type="submit" value="submit">
         </form>
@@ -35,6 +37,7 @@ def home():
                 <option id="temperature_max" value="temperature_max">Maximum Temperature [C]</option>
                 <option id="temperature_min" value="temperature_min">Minimum Temperature [C]</option>
                 <option id="rain" value="rain">Daily precipitation [mm]</option>
+                <option id="gust" value="gust">Maximum gust [km/h]</option>
            </select>
            <input name="date" placeholder="YYYY-MM-DD">
            <input class="btn" type="submit" value="submit">
