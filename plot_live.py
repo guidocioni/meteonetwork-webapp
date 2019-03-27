@@ -6,7 +6,7 @@ update_database=False
 def main(plot_type='temperature', plot_filename='output.png', projection='italy'):
 	if plot_filename:
 		import matplotlib
-		matplotlib.use("cairo")
+		matplotlib.use("agg")
 
 	# First get coordinates
 	if update_database:

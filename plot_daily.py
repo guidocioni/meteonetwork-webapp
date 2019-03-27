@@ -8,7 +8,7 @@ def main(plot_type='temperature_max', date_download=(datetime.now()-timedelta(1)
 				 plot_filename='output.png', projection='italy'):
 	if plot_filename:
 		import matplotlib
-		matplotlib.use("cairo")
+		matplotlib.use("agg")
 
 	# First get coordinates
 	if update_database:
@@ -71,6 +71,7 @@ def plot_temperature_min(projection, plot_type, temp_sparse, temp,
 	import matplotlib.pyplot as plt
 	'''Plot temperature on the map'''
 	fig = plt.figure(1, figsize=(10,10))
+	ax = utils.get_projection(plt, projection, regions=False)
 
 	utils.add_vals_on_map(ax=ax, var=temp_sparse, projection=projection, lons=lons, lats=lats)
 
@@ -87,8 +88,9 @@ def plot_rain(projection, rain_sparse, rain,
 					 lons, lats, date, plot_filename='output.png'):
 	import matplotlib.pyplot as plt
 	fig = plt.figure(1, figsize=(10,10))
+	ax = utils.get_projection(plt, projection, regions=False)
 
-	utils.add_vals_on_map(ax=ax, var=rain_sparse, lons=lons, lats=lats, projection=projection,
+	utils.add_vals_on_map(ax=ax, var=rain_sparse, projection=projection, lons=lons, lats=lats,
 					 minval=0, maxval=150, cmap='gist_stern_r')
 
 	plt.title('Pioggia giornaliera %s' % date)
