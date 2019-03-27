@@ -1,0 +1,9 @@
+gunicorn
+Flask
+Werkzeug
+lxml
+requests
+pandas
+numpy
+matplotlib
+pycairo
