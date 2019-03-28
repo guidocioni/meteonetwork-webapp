@@ -4,7 +4,7 @@ import numpy as np
 
 update_database=False
 
-def main(plot_type='synoptic', plot_filename='output.png', projection='italy'):
+def main(plot_type='temperature', plot_filename='output.png', projection='italy'):
 	if plot_filename:
 		import matplotlib
 		matplotlib.use("cairo")
@@ -52,10 +52,10 @@ def main(plot_type='synoptic', plot_filename='output.png', projection='italy'):
 					 lons, lats, data['date'], plot_filename)
 	elif plot_type == 'synoptic':
 		u, v = utils.wind_components(data['wind_speed'].values, data['wind_direction'].values)
-		u_sparse = utils.filter_values(u, lats, lons, max_density=1, num_bins=30)
-		v_sparse = utils.filter_values(v, lats, lons, max_density=1, num_bins=30)
+		u_sparse = utils.filter_values(u, lats, lons, max_density=1, num_bins=35)
+		v_sparse = utils.filter_values(v, lats, lons, max_density=1, num_bins=35)
 		mslp = data['pressure'].values
-		mslp_sparse = utils.filter_values(mslp, lats, lons, max_density=1, num_bins=30)
+		mslp_sparse = utils.filter_values(mslp, lats, lons, max_density=1, num_bins=35)
 		mslp_sparse[mslp_sparse==0] = np.nan
 		plot_synoptic(projection, u_sparse, v_sparse, mslp_sparse,
 					 lons, lats, data['date'], plot_filename)

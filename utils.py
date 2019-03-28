@@ -221,7 +221,7 @@ def get_projection(plt, projection='italy', regions=False):
 def add_background(plt, projection, image='background.png'):
     ''''Add a background image to the plot'''
     if projection == 'italy':
-        extents = [6.000000000000001, 19.0, 36.0, 48.00000000000001]
+        extents = [6, 19.0, 36.0, 48]
     
     img = plt.imread(image)
     plt.axis('off')
@@ -230,12 +230,11 @@ def add_background(plt, projection, image='background.png'):
     return plt.gca()
 
 def add_vals_on_map(ax, projection, var, lons, lats, minval=None, maxval=None,
-                     cmap='rainbow', border=True, shift_x=0., shift_y=0., fontsize=12, colors=True):
+                     cmap='rainbow', shift_x=0., shift_y=0., fontsize=12, colors=True):
     '''Given an input projection, a variable containing the values and a plot put
     the values on a map exlcuing NaNs and taking care of not going
     outside of the map boundaries, which can happen.
     - minval, maxval set the extents for the colorscale cmap
-    - border activates the border on the text labels
     - shift_x and shift_y apply a shifting offset to all text labels
     - colors indicate whether the colorscale cmap should be used to map the values of the array'''
     if not minval:
@@ -250,23 +249,28 @@ def add_vals_on_map(ax, projection, var, lons, lats, minval=None, maxval=None,
         extents = ax.get_extent()
     else:
         if projection == 'italy':
-            extents = [6.000000000000001, 19.0, 36.0, 48.00000000000001]
+            extents = [6, 19.0, 36.0, 48]
     
     lon_min, lon_max, lat_min, lat_max = extents
 
-    texts=[]
+    # Remove values outside of the extents and NaN
+    # somehow np.isnan has to be used as this condition var == np.nan does not recognize
+    # the NaN
+    inds = np.argwhere((lon_min<=lons) & (lons<=lon_max) & (lat_min<=lats) & (lats<=lat_max) & (np.isnan(var)!=True))
+    var = var[inds]
+    lons = lons[inds]
+    lats = lats[inds]
+
     for i, txt in enumerate(var):
         if colors:
-            if not(np.isnan(txt)) and (lon_min<=lons[i]<=lon_max) and (lat_min<=lats[i]<=lat_max):
-                texts.append(ax.text(lons[i]+shift_x, lats[i]+shift_y, ('%d'%txt),
-                 color=m.to_rgba(float(txt)), weight='bold', fontsize=fontsize))
-        else: # No color defined
-            if not(np.isnan(txt)) and (lon_min<=lons[i]<=lon_max) and (lat_min<=lats[i]<=lat_max):
-                texts.append(ax.text(lons[i]+shift_x, lats[i]+shift_y, ('%d'%txt),
-                 color='white', weight='bold', fontsize=fontsize))            
-    # Add border to the text
-    if border: 
-        [text.set_path_effects([patheffects.Stroke(linewidth=1, foreground='black'), patheffects.Normal()]) for text in texts]
+            ax.annotate(('%d'%txt), (lons[i]+shift_x, lats[i]+shift_y),
+                             color = m.to_rgba(float(txt)), weight='bold', fontsize=fontsize,
+                              path_effects=[patheffects.withStroke(linewidth=1, foreground="black")])
+        else:
+            ax.annotate(('%d'%txt), (lons[i]+shift_x, lats[i]+shift_y),
+                             color = 'white', weight='bold', fontsize=fontsize,
+                              path_effects=[patheffects.withStroke(linewidth=1, foreground="black")])
+
 
 def add_barbs_on_map(ax, projection, u, v, lons, lats,
              shift_x=0., shift_y=0., magnitude=False, cmap='gnuplot_r', minval=0, maxval=30):
@@ -283,14 +287,23 @@ def add_barbs_on_map(ax, projection, u, v, lons, lats,
     
     lon_min, lon_max, lat_min, lat_max = extents
 
-    for i, txt in enumerate(u):
-        if not(np.isnan(txt)) and (lon_min<=lons[i]<=lon_max) and (lat_min<=lats[i]<=lat_max):
-            if magnitude:
-                norm = mplcolors.Normalize(vmin=minval, vmax=maxval)
-                ax.barbs(lons[i]+shift_x, lats[i]+shift_y, u[i], v[i], (u[i]**2+v[i]**2)**(0.5),
-                    zorder=6, length=6, cmap=cmap, norm=norm)
-            else:
-                ax.barbs(lons[i]+shift_x, lats[i]+shift_y, u[i], v[i], zorder=6, length=6)
+    # Remove values outside of the extents and NaN
+    # somehow np.isnan has to be used as this condition var == np.nan does not recognize
+    # the NaN
+    inds = np.argwhere( ((lon_min<=lons) & (lons<=lon_max) & (lat_min<=lats) &
+                         (lats<=lat_max) & (np.isnan(u)!=True) & (np.isnan(v)!=True)) )
+    u = u[inds]
+    v = v[inds]
+    lons = lons[inds]
+    lats = lats[inds]
+
+    if magnitude:
+        norm = mplcolors.Normalize(vmin=minval, vmax=maxval)
+        ax.barbs(lons+shift_x, lats+shift_y, u, v, (u**2+v**2)**(0.5),
+            zorder=6, length=6, cmap=cmap, norm=norm)
+    else:
+        ax.barbs(lons+shift_x, lats+shift_y, u, v, zorder=6, length=6)
+
           
 def wind_components(speed, wdir):
     '''Get wind components from speed and direction.'''
@@ -312,7 +325,7 @@ def add_hist_on_map(ax, var, width="30%", height="15%", loc=1, label='Temperatur
     Unfortunately face color has to be hardcoded while I understand how can
     one retrieve the  color of the fillcontinents method from basemap.'''
     axin = inset_axes(ax, width=width, height=height, loc=loc)
-    hist = axin.hist(var[~np.isnan(var)], bins=50, normed=True, color='black', alpha=0.7)
+    hist = axin.hist(var[~np.isnan(var)], bins=50, density=True, color='black', alpha=0.8)
     axin.yaxis.set_visible(False)
     axin.spines['right'].set_visible(False)
     axin.spines['left'].set_visible(False)
@@ -320,6 +333,7 @@ def add_hist_on_map(ax, var, width="30%", height="15%", loc=1, label='Temperatur
     axin.set_xlabel(label)
     # axin.set_facecolor('#64B6AC', alpha=0.1)
     axin.set_facecolor((0, 0, 0, 0))
+    
     return hist
 
 
