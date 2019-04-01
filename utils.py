@@ -10,11 +10,10 @@ from matplotlib._png import read_png
 from matplotlib import patheffects
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import importlib
+import os
 
-import credentials
-
-api_key = credentials.api_key
-user = credentials.user
+api_key = os.environ['MNW_API_KEY']
+user = os.environ['MNW_USER']
 
 rest_url="http://api.meteonetwork.it/xml_rpc/public/rest"
 

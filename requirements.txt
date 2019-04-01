@@ -6,4 +6,3 @@ requests
 pandas
 numpy
 matplotlib
-pycairo
