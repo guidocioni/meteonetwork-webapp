@@ -7,6 +7,7 @@ import plot_daily
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def home():
     return """
@@ -47,31 +48,34 @@ def home():
     """
 
 
-@app.route('/live', methods = ['POST'])
+@app.route('/live', methods=['POST'])
 def live():
     map_type = request.form.get("Dropdown")
     if map_type is None:
         map_type = 'temperature'
 
     plot_filename = 'output.png'
-    plot_live.main(plot_type=map_type, plot_filename=plot_filename, projection='italy')
-    
+    plot_live.main(plot_type=map_type,
+                   plot_filename=plot_filename, projection='italy')
+
     return send_file(plot_filename, mimetype='image/png')
 
-@app.route('/daily', methods = ['POST'])
+
+@app.route('/daily', methods=['POST'])
 def daily():
     map_type = request.form.get("DropdownDaily")
     if map_type is None:
         map_type = 'temperature_max'
     date = request.form.get("date")
     if date == '':
-        date = (datetime.now()-timedelta(1)).strftime(format='%Y-%m-%d')
+        date = (datetime.now() - timedelta(1)).strftime(format='%Y-%m-%d')
 
     plot_filename = 'output.png'
     plot_daily.main(plot_type=map_type, date_download=date,
-             plot_filename=plot_filename, projection='italy')
-    
+                    plot_filename=plot_filename, projection='italy')
+
     return send_file(plot_filename)
 
+
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=True, host='0.0.0.0')
+    app.run(debug=True, use_reloader=True, host='127.0.0.1')
