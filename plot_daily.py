@@ -2,8 +2,9 @@ import utils
 import pandas as pd
 from datetime import datetime, timedelta
 
-update_database = False
+from api import MNWApi
 
+mnw = MNWApi()
 
 def main(plot_type='temperature_max', date_download=(datetime.now() - timedelta(1)).strftime(format='%Y-%m-%d'),
          plot_filename='output.png', projection='italy'):
@@ -11,31 +12,18 @@ def main(plot_type='temperature_max', date_download=(datetime.now() - timedelta(
         import matplotlib
         matplotlib.use("agg")
 
-    # First get coordinates
-    if update_database:
-        utils.download_coordinate_stations()
-
-    df = utils.get_daily_values(date_download)
-
-    # Read the coordinates
-    coords = pd.read_csv('stazioni_coordinate.csv', index_col=0)
-
-    # Now merge the two dataset. This automatically takes care
-    # of finding the common stations using station_id
-    #
-    data = pd.merge(left=coords, left_on='station_id', right=df,
-                    right_on='station_id', suffixes=('', ''))
+    data = mnw.get_daily_stations(observation_date=date_download, country='IT')
 
     lats = data['latitude'].values
     lons = data['longitude'].values
 
     if plot_type == 'temperature_max':
-        temp_max = data['temp max'].values
+        temp_max = data['t_max'].values
         temp_max_sparse = utils.filter_max_values(temp_max, lats, lons)
         plot_temperature_max(projection, plot_type, temp_max_sparse, temp_max, lons, lats,
                              date_download, plot_filename)
     elif plot_type == 'temperature_min':
-        temp_min = data['temp min'].values
+        temp_min = data['t_min'].values
         temp_min_sparse = utils.filter_min_values(temp_min, lats, lons)
         plot_temperature_min(projection, plot_type, temp_min_sparse, temp_min, lons, lats,
                              date_download, plot_filename)
@@ -45,7 +33,7 @@ def main(plot_type='temperature_max', date_download=(datetime.now() - timedelta(
         plot_rain(projection, rain_sparse, rain, lons,
                   lats, date_download, plot_filename)
     elif plot_type == 'gust':
-        gust = data['wind max'].values
+        gust = data['w_max'].values
         gust_sparse = utils.filter_max_values(gust, lats, lons)
         plot_gust(projection, gust_sparse, gust, lons,
                   lats, date_download, plot_filename)

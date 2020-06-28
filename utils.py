@@ -221,7 +221,7 @@ def get_today_data(station_id="abr007"):
     return(df)
 
 
-def filter_values(var, lats, lons, max_density=1.5, num_bins=61):
+def filter_values(var, lats, lons, max_density=1., num_bins=30):
     '''Attempts to remove overlapping points by binning the results and 
     removing stations within a box with a certain density. For now the algorithm
     just randomly choose one of the station in the box.
@@ -244,7 +244,7 @@ def filter_values(var, lats, lons, max_density=1.5, num_bins=61):
     return(var_sparse)
 
 
-def filter_max_values(var, lats, lons, max_density=1.5, num_bins=61):
+def filter_max_values(var, lats, lons, max_density=1, num_bins=30):
     '''Attempts to remove overlapping points by binning the results and 
     removing stations within a box with a certain density. Differently
     from what is done in filter_values, here the maximum value is 
@@ -271,7 +271,7 @@ def filter_max_values(var, lats, lons, max_density=1.5, num_bins=61):
     return(var_sparse)
 
 
-def filter_min_values(var, lats, lons, max_density=1.5, num_bins=61):
+def filter_min_values(var, lats, lons, max_density=1, num_bins=30):
     '''Attempts to remove overlapping points by binning the results and
     removing stations within a box with a certain density. Differently
     from what is done in filter_values, here the minimum value is

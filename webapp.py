@@ -1,5 +1,4 @@
-from flask import Flask, send_file, request
-from werkzeug import secure_filename
+from flask import Flask, request, send_file
 from datetime import datetime, timedelta
 
 import plot_live
