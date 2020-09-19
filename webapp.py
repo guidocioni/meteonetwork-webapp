@@ -59,6 +59,18 @@ def live():
 
     return send_file(plot_filename, mimetype='image/png')
 
+@app.route('/livequery', methods=['GET', 'POST'])
+def livequery():
+    map_type = request.args.get('type')
+    if map_type is None:
+        map_type = 'temperature'
+
+    plot_filename = 'output.png'
+    plot_live.main(plot_type=map_type,
+                   plot_filename=plot_filename, projection='italy')
+
+    return send_file(plot_filename, mimetype='image/png')
+
 
 @app.route('/daily', methods=['POST'])
 def daily():
@@ -66,6 +78,21 @@ def daily():
     if map_type is None:
         map_type = 'temperature_max'
     date = request.form.get("date")
+    if date == '':
+        date = (datetime.now() - timedelta(1)).strftime(format='%Y-%m-%d')
+
+    plot_filename = 'output.png'
+    plot_daily.main(plot_type=map_type, date_download=date,
+                    plot_filename=plot_filename, projection='italy')
+
+    return send_file(plot_filename)
+
+@app.route('/dailyquery', methods=['GET', 'POST'])
+def dailyquery():
+    map_type = request.args.get("type")
+    if map_type is None:
+        map_type = 'temperature_max'
+    date = request.args.get("date")
     if date == '':
         date = (datetime.now() - timedelta(1)).strftime(format='%Y-%m-%d')
 

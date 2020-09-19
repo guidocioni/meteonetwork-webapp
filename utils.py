@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.colors as mplcolors
 import matplotlib.cm as mplcm
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
-from matplotlib._png import read_png
+from matplotlib.image import imread as read_png
 from matplotlib import patheffects
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import importlib
