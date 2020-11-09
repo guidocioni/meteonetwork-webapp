@@ -210,10 +210,43 @@ def add_barbs_on_map(ax, projection, u, v, lons, lats,
 
 def wind_components(speed, wdir):
     '''Get wind components from speed and direction.'''
-    wdir = np.deg2rad(wdir)
+    func_v = np.vectorize(wind_degrees_from_direction)
+
+    wdir = func_v(wdir)
+
     u = -speed * np.sin(wdir)
     v = -speed * np.cos(wdir)
+
     return u, v
+
+
+def wind_degrees_from_direction(wdir, rad=True):
+    '''Get wind direction (in degree) from cardinal direction'''
+    conversion = {
+        'N': 0.0,
+        'NNE': 22.5,
+        'NE': 45.0,
+        'ENE': 67.5,
+        'E': 90.0,
+        'ESE': 112.5,
+        'SE': 135.0,
+        'SSE': 157.5,
+        'S': 180.0,
+        'SSW': -157.5,
+        'SW': -135.0,
+        'WSW': -112.5,
+        'W': -90,
+        'WNW': -67.5,
+        'NW': -45.0,
+        'NNW': -22.5
+    }
+    if wdir:
+        if rad:
+            return np.deg2rad(conversion[wdir])
+        else:
+            return conversion[wdir]
+    else:
+        return None
 
 
 def add_logo_on_map(ax, logo, zoom=0.15, pos=(0.92, 0.1)):

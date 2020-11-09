@@ -7,7 +7,7 @@ import plot_daily
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route('/meteonetwork')
 def home():
     return """
     <html>
@@ -19,7 +19,7 @@ def home():
         For live maps use the first input, for daily values use the second input. Not both at the same time!
         The resulting picture will open in the same window
         <h2>Live maps</h2>
-        <form class="mapSelection" method="POST" action="/live">  
+        <form class="mapSelection" method="POST" action="/meteonetwork/live">  
            <select class="mapForm" id="DropdownSelector" type="text" name="Dropdown" placeholder="Select A Map">
                 <option disabled selected>Select a map</option>
                 <option id="temperature" value="temperature">Temperature [C]</option>
@@ -31,7 +31,7 @@ def home():
            <input class="btn" type="submit" value="submit">
         </form>
         <h2>Daily maps</h2>
-        <form class="dailyMapSelection" method="POST" action="/daily">  
+        <form class="dailyMapSelection" method="POST" action="/meteonetwork/daily">  
            <select class="dailyMapForm" id="DropdownSelector" type="text" name="DropdownDaily" placeholder="Select A Map">
                 <option disabled selected>Select a Map</option>
                 <option id="temperature_max" value="temperature_max">Maximum Temperature [C]</option>
@@ -47,7 +47,7 @@ def home():
     """
 
 
-@app.route('/live', methods=['POST'])
+@app.route('/meteonetwork/live', methods=['POST'])
 def live():
     map_type = request.form.get("Dropdown")
     if map_type is None:
@@ -59,7 +59,7 @@ def live():
 
     return send_file(plot_filename, mimetype='image/png')
 
-@app.route('/livequery', methods=['GET', 'POST'])
+@app.route('/meteonetwork/livequery', methods=['GET', 'POST'])
 def livequery():
     map_type = request.args.get('type')
     if map_type is None:
@@ -72,7 +72,7 @@ def livequery():
     return send_file(plot_filename, mimetype='image/png')
 
 
-@app.route('/daily', methods=['POST'])
+@app.route('/meteonetwork/daily', methods=['POST'])
 def daily():
     map_type = request.form.get("DropdownDaily")
     if map_type is None:
@@ -87,7 +87,7 @@ def daily():
 
     return send_file(plot_filename)
 
-@app.route('/dailyquery', methods=['GET', 'POST'])
+@app.route('/meteonetwork/dailyquery', methods=['GET', 'POST'])
 def dailyquery():
     map_type = request.args.get("type")
     if map_type is None:
@@ -104,4 +104,4 @@ def dailyquery():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=True, host='127.0.0.1')
+    app.run(debug=False)
